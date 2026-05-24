@@ -500,7 +500,7 @@
       {
         id: "grenade",
         name: "AOE Grenade",
-        detail: "right click to throw a big explosion",
+        detail: "right click to throw a visible AOE grenade",
         cost: 120,
         cooldown: 7.5
       },
@@ -539,6 +539,8 @@
       mercs: [],
       banners: [],
       mines: [],
+      grenades: [],
+      explosions: [],
       coins: [],
       particles: [],
       owned: new Set(["pistol"]),
@@ -559,6 +561,8 @@
       waveTimer: 0,
       pointer: { active: false, x: 0, y: 0 },
       pickupTimer: 0,
+      cheatBuffer: "",
+      devMode: false,
       shopDirty: true
     };
 
@@ -574,6 +578,8 @@
       state.mercs = [];
       state.banners = [];
       state.mines = [];
+      state.grenades = [];
+      state.explosions = [];
       state.coins = [];
       state.particles = [];
       state.owned = new Set(["pistol"]);
@@ -587,6 +593,8 @@
       state.reloadTimer = 0;
       state.secondaryCooldown = 0;
       state.sodaTimer = 0;
+      state.cheatBuffer = "";
+      state.devMode = false;
       state.kills = 0;
       state.wave = 1;
       state.spawnTimer = 0;
@@ -823,7 +831,21 @@
       const secondary = secondaries.find(item => item.id === state.secondaryId);
       state.secondaryCooldown = secondary.cooldown;
       if (secondary.id === "grenade") {
-        damageZombiesInRadius(state.pointer.x, state.pointer.y, 135, 95, "#ffdd57");
+        const dx = state.pointer.x - state.player.x;
+        const dy = state.pointer.y - state.player.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const travelTime = clamp(distance / 720, 0.28, 0.72);
+        state.grenades.push({
+          x: state.player.x,
+          y: state.player.y,
+          startX: state.player.x,
+          startY: state.player.y,
+          targetX: state.pointer.x,
+          targetY: state.pointer.y,
+          timer: travelTime,
+          total: travelTime,
+          radius: 8
+        });
       }
       if (secondary.id === "banner") {
         state.banners.push({ x: state.player.x, y: state.player.y, radius: 86, life: 10, pulse: 0 });
@@ -899,6 +921,10 @@
       if (p.infectTimer > 0) {
         p.hp -= 2.4 * dt;
         if (!wasInfected || Math.floor(p.infectTimer * 10) % 7 === 0) addParticles(p.x, p.y, "#8df06a", 1);
+      }
+      if (state.devMode) {
+        p.hp = 100;
+        state.money = 999999;
       }
       if (levelOf("regen") > 0 && p.hp < 100 && p.infectTimer <= 0) {
         p.hp = Math.min(100, p.hp + levelOf("regen") * 0.65 * dt);
@@ -1158,6 +1184,24 @@
         }
       }
 
+      for (let i = state.grenades.length - 1; i >= 0; i--) {
+        const grenade = state.grenades[i];
+        grenade.timer -= dt;
+        const progress = 1 - clamp(grenade.timer / grenade.total, 0, 1);
+        grenade.x = grenade.startX + (grenade.targetX - grenade.startX) * progress;
+        grenade.y = grenade.startY + (grenade.targetY - grenade.startY) * progress;
+        if (grenade.timer <= 0) {
+          damageZombiesInRadius(grenade.targetX, grenade.targetY, 120, 54, "#ffdd57");
+          state.explosions.push({ x: grenade.targetX, y: grenade.targetY, radius: 120, life: 0.42, total: 0.42, color: "#ffdd57" });
+          state.grenades.splice(i, 1);
+        }
+      }
+
+      for (let i = state.explosions.length - 1; i >= 0; i--) {
+        state.explosions[i].life -= dt;
+        if (state.explosions[i].life <= 0) state.explosions.splice(i, 1);
+      }
+
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const particle = state.particles[i];
         particle.x += particle.vx * dt;
@@ -1280,6 +1324,35 @@
         ctx.stroke();
       }
 
+      for (const grenade of state.grenades) {
+        const progress = 1 - clamp(grenade.timer / grenade.total, 0, 1);
+        const arcLift = Math.sin(progress * Math.PI) * 24;
+        ctx.beginPath();
+        ctx.arc(grenade.x, grenade.y - arcLift, grenade.radius + progress * 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#2b3324";
+        ctx.fill();
+        ctx.strokeStyle = "#ffdd57";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(grenade.startX, grenade.startY);
+        ctx.lineTo(grenade.targetX, grenade.targetY);
+        ctx.strokeStyle = "rgba(255, 221, 87, 0.22)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      for (const explosion of state.explosions) {
+        const progress = 1 - clamp(explosion.life / explosion.total, 0, 1);
+        ctx.beginPath();
+        ctx.arc(explosion.x, explosion.y, explosion.radius * progress, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 221, 87, ${0.28 * (1 - progress)})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255, 142, 43, ${0.82 * (1 - progress)})`;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
+
       for (const pickup of state.pickups) {
         const pulse = Math.sin(pickup.pulse) * 2;
         ctx.beginPath();
@@ -1372,6 +1445,11 @@
         const secondary = secondaries.find(item => item.id === state.secondaryId);
         const status = state.secondaryCooldown > 0 ? `${state.secondaryCooldown.toFixed(1)}s` : "ready";
         ctx.fillText(`Right click: ${secondary.name} (${status})`, 26, height - 72);
+      }
+      if (state.devMode) {
+        ctx.fillStyle = "#ffdd57";
+        ctx.font = "900 13px system-ui, sans-serif";
+        ctx.fillText("TESTING MODE", width - 126, 34);
       }
     }
 
@@ -1526,6 +1604,16 @@
 
     window.addEventListener("keydown", event => {
       const key = event.key.toLowerCase();
+      if (/^[a-z]$/.test(key)) {
+        state.cheatBuffer = (state.cheatBuffer + key).slice(-12);
+        if (state.cheatBuffer === "mustardmango") {
+          state.devMode = true;
+          if (state.player) state.player.hp = 100;
+          state.money = 999999;
+          state.shopDirty = true;
+          addParticles(state.player ? state.player.x : world.w / 2, state.player ? state.player.y : world.h / 2, "#ffdd57", 36);
+        }
+      }
       keys.add(key);
       if (key === " " || key === "spacebar") {
         event.preventDefault();
