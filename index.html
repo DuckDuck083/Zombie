@@ -1594,9 +1594,12 @@
           const attackAngle = Math.atan2(zombie.y - p.y, zombie.x - p.x);
           const playerBackAngle = Math.atan2(-p.faceY, -p.faceX);
           const backArc = Math.abs(Math.atan2(Math.sin(attackAngle - playerBackAngle), Math.cos(attackAngle - playerBackAngle)));
-          const backstabHit = targetEntity === p && zombie.type.backstab && backArc < 0.92;
-          const hitDamage = backstabHit ? 9999 : zombie.damage * (targetEntity === p && state.sodaTimer > 0 ? 1.45 : 1);
-          if (targetEntity === p) damagePlayer(hitDamage, backstabHit ? "a stalker backstab" : `a ${zombie.type.name}`);
+          const backstabHit = targetEntity === p && zombie.type.backstab && backArc < 1.75;
+          const hitDamage = backstabHit ? Math.max(9999, p.hp + 1000) : zombie.damage * (targetEntity === p && state.sodaTimer > 0 ? 1.45 : 1);
+          if (targetEntity === p) {
+            damagePlayer(hitDamage, backstabHit ? "a stalker backstab" : `a ${zombie.type.name}`);
+            if (backstabHit) p.hp = 0;
+          }
           else targetEntity.hp -= hitDamage;
           if (targetEntity === p) p.invuln = 0.55;
           zombie.biteTimer = zombie.type.backstab ? 1.25 : 0.8;
@@ -2105,8 +2108,8 @@
       for (const zombie of state.zombies) {
         if (zombie.type.backstab) {
           const playerDistance = state.player ? dist(zombie, state.player) : Infinity;
-          const closeReveal = clamp(1 - playerDistance / 96, 0, 1);
-          const shimmer = 0.025 + Math.abs(Math.sin(zombie.cloakPulse)) * 0.045 + closeReveal * 0.34;
+          const closeReveal = clamp(1 - playerDistance / 52, 0, 1);
+          const shimmer = 0.006 + Math.abs(Math.sin(zombie.cloakPulse)) * 0.014 + closeReveal * 0.12;
           if (zombie.burnTimer > 0) {
             ctx.globalAlpha = 0.34;
             drawCircle(zombie, 0, 0, zombie.type.color);
@@ -2125,8 +2128,8 @@
           }
           ctx.beginPath();
           ctx.arc(zombie.x, zombie.y, zombie.radius + 5, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(201, 214, 255, ${zombie.burnTimer > 0 ? 0.5 : shimmer + 0.05})`;
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = `rgba(201, 214, 255, ${zombie.burnTimer > 0 ? 0.5 : shimmer + 0.018})`;
+          ctx.lineWidth = 1;
           ctx.stroke();
           continue;
         }
