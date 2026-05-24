@@ -592,6 +592,8 @@
       mode: "run",
       trainingStep: 0,
       trainingKills: 0,
+      tipIndex: 0,
+      tipTimer: 0,
       wave: 1,
       spawnTimer: 0,
       shotTimer: 0,
@@ -637,6 +639,8 @@
       state.kills = 0;
       state.trainingStep = 0;
       state.trainingKills = 0;
+      state.tipIndex = 0;
+      state.tipTimer = 0;
       state.wave = 1;
       state.spawnTimer = 0;
       state.shotTimer = 0;
@@ -704,6 +708,29 @@
       "Fight a bigger mixed wave. Shamblers are basic, runners are fast, brutes are tough, spitters shoot, and splitters break apart.",
       "Fight special zombies. Chillers slow you, infectors poison you, and trappers leave sticky circles on the ground.",
       "Training complete. Press Space to start a normal run, or keep practicing here."
+    ];
+
+    const gameplayTips = [
+      "The A disks are ammo pickups. The + disks are health pickups.",
+      "The Burst SMG is great for spraying into crowds while you keep moving.",
+      "Watch out for sticky traps. They slow you down and make escapes harder.",
+      "Reload before a big wave reaches you so you are not stuck with an empty magazine.",
+      "Runners are fragile, but they close distance fast. Clear them before they surround you.",
+      "Brutes have high health. Kite them while you thin out weaker zombies.",
+      "Spitters attack from range. Strafe sideways when green shots are coming in.",
+      "Splitters break into crawlers when killed. Be ready for the second swarm.",
+      "Chillers slow your movement. Keep extra space when blue zombies are nearby.",
+      "Infectors poison you over time. Grab health or finish the fight quickly.",
+      "Coins buy weapons, upgrades, secondaries, and mercenaries in the right panel.",
+      "Press Q after buying Coin Loader or Gold Medkit to turn coins into ammo or health.",
+      "Passive Regen only works when you are not infected, so poison still matters.",
+      "Redline Boots help you kite large waves and escape traps.",
+      "Trigger Rig makes every gun fire faster, including your strongest weapons.",
+      "Ammo Scavenger can refund shots, which is best on weapons that burn ammo quickly.",
+      "The Razor Whip hits hard up close, but you need to face the target.",
+      "The Sniper is strongest when you line up zombies and shoot through the pack.",
+      "Mercenaries add steady damage, but they still need space to stay alive.",
+      "Right-click secondaries can save a run. Use grenades, banners, soda, or mines before you are trapped."
     ];
 
     function setupTrainingStep(step) {
@@ -1078,6 +1105,11 @@
       p.infectTimer = Math.max(0, p.infectTimer - dt);
       state.secondaryCooldown = Math.max(0, state.secondaryCooldown - dt);
       state.sodaTimer = Math.max(0, state.sodaTimer - dt);
+      state.tipTimer += dt;
+      while (state.tipTimer >= 7) {
+        state.tipTimer -= 7;
+        state.tipIndex = (state.tipIndex + 1) % gameplayTips.length;
+      }
       if (p.infectTimer > 0) {
         p.hp -= 2.4 * dt;
         if (!wasInfected || Math.floor(p.infectTimer * 10) % 7 === 0) addParticles(p.x, p.y, "#8df06a", 1);
@@ -1649,6 +1681,20 @@
         const status = state.secondaryCooldown > 0 ? `${state.secondaryCooldown.toFixed(1)}s` : "ready";
         ctx.fillText(`Right click: ${secondary.name} (${status})`, 26, height - 72);
       }
+      const tipText = `Tip: ${gameplayTips[state.tipIndex]}`;
+      ctx.font = "800 14px system-ui, sans-serif";
+      const tipWide = width >= 820;
+      const tipX = tipWide ? 292 : 14;
+      const tipWidth = tipWide ? width - 306 : width - 28;
+      const tipLines = getWrappedLines(tipText, tipWidth - 24);
+      const tipHeight = 18 + tipLines.length * 20;
+      const tipY = tipWide ? height - tipHeight - 14 : height - tipHeight - 72;
+      ctx.fillStyle = "rgba(8,10,12,0.72)";
+      ctx.fillRect(tipX, tipY, tipWidth, tipHeight);
+      ctx.fillStyle = "#f8fbff";
+      tipLines.forEach((line, index) => {
+        ctx.fillText(line, tipX + 12, tipY + 25 + index * 20);
+      });
       if (state.mode === "training") {
         const panelWidth = Math.min(720, width - 28);
         const panelX = 14;
