@@ -219,6 +219,13 @@
       line-height: 1.35;
     }
 
+    #trainingText {
+      color: #f4f7fb;
+      font-size: 1rem;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
     .dot {
       display: inline-block;
       width: 10px;
@@ -377,7 +384,7 @@
       {
         id: "burst",
         name: "Burst SMG",
-        cost: 45,
+        cost: 60,
         detail: "fast three-round spray",
         cooldown: 112,
         speed: 720,
@@ -692,10 +699,10 @@
     }
 
     const trainingSteps = [
-      "Move with WASD or arrow keys. Aim with the mouse. Break the target dummies with your starting pistol.",
-      "Weapon practice: buy or equip weapons from the shop. Try the Razor Whip up close and the Sniper at long range.",
-      "Zombie lesson: shamblers are basic, runners are fast, brutes are tanky, spitters shoot from range, splitters burst into crawlers.",
-      "Special lesson: chillers slow you, infectors poison you, and trappers leave sticky circles. Keep moving and use pickups.",
+      "Move with WASD or the arrow keys. Aim with the mouse. Shoot every target dummy to continue.",
+      "Practice weapons now. Buy gear in the shop, use the Razor Whip up close, and use the Sniper from far away.",
+      "Fight a bigger mixed wave. Shamblers are basic, runners are fast, brutes are tough, spitters shoot, and splitters break apart.",
+      "Fight special zombies. Chillers slow you, infectors poison you, and trappers leave sticky circles on the ground.",
       "Training complete. Press Space to start a normal run, or keep practicing here."
     ];
 
@@ -710,10 +717,12 @@
       state.ammo = Math.max(state.ammo, 240);
 
       if (step === 0 || step === 1) {
-        for (let i = 0; i < 7; i++) {
+        const dummyCount = step === 0 ? 14 : 18;
+        for (let i = 0; i < dummyCount; i++) {
+          const row = Math.floor(i / 6);
           state.dummies.push({
-            x: state.player.x + 260 + i * 58,
-            y: state.player.y + (i % 2 === 0 ? -70 : 70),
+            x: state.player.x + 240 + (i % 6) * 64,
+            y: state.player.y - 130 + row * 86,
             radius: 17,
             hp: step === 0 ? 45 : 90,
             maxHp: step === 0 ? 45 : 90
@@ -721,16 +730,39 @@
         }
       }
       if (step === 2) {
-        zombieTypes.slice(0, 5).forEach((type, i) => spawnZombie(type, state.player.x + 260 + i * 75, state.player.y - 80 + i * 38));
+        for (let i = 0; i < 16; i++) {
+          const type = zombieTypes[i % 5];
+          spawnZombie(type, state.player.x + 280 + (i % 8) * 72, state.player.y - 210 + Math.floor(i / 8) * 180);
+        }
       }
       if (step === 3) {
-        zombieTypes.slice(5).forEach((type, i) => spawnZombie(type, state.player.x + 280 + i * 105, state.player.y - 90 + i * 80));
+        for (let i = 0; i < 12; i++) {
+          const type = zombieTypes[5 + (i % (zombieTypes.length - 5))];
+          spawnZombie(type, state.player.x + 300 + (i % 6) * 92, state.player.y - 190 + Math.floor(i / 6) * 210);
+        }
       }
       updateTrainingText();
     }
 
     function updateTrainingText() {
       ui.trainingText.textContent = state.mode === "training" ? trainingSteps[state.trainingStep] : "Select Training Mode at the start to practice weapons and learn zombie types.";
+    }
+
+    function getWrappedLines(text, maxWidth) {
+      const words = text.split(" ");
+      const lines = [];
+      let line = "";
+      for (const word of words) {
+        const testLine = line ? `${line} ${word}` : word;
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line) lines.push(line);
+      return lines;
     }
 
     function levelOf(id) {
@@ -1618,13 +1650,21 @@
         ctx.fillText(`Right click: ${secondary.name} (${status})`, 26, height - 72);
       }
       if (state.mode === "training") {
+        const panelWidth = Math.min(720, width - 28);
+        const panelX = 14;
+        const panelY = 14;
+        ctx.font = "800 18px system-ui, sans-serif";
+        const trainingLines = getWrappedLines(trainingSteps[state.trainingStep], panelWidth - 24);
+        const panelHeight = 56 + trainingLines.length * 24;
         ctx.fillStyle = "rgba(8,10,12,0.72)";
-        ctx.fillRect(14, 14, Math.min(520, width - 28), 56);
+        ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
         ctx.fillStyle = "#f8fbff";
-        ctx.font = "800 14px system-ui, sans-serif";
-        ctx.fillText(`Training ${state.trainingStep + 1}/${trainingSteps.length}`, 26, 36);
-        ctx.font = "700 12px system-ui, sans-serif";
-        ctx.fillText(trainingSteps[state.trainingStep], 26, 56);
+        ctx.font = "900 20px system-ui, sans-serif";
+        ctx.fillText(`Training ${state.trainingStep + 1}/${trainingSteps.length}`, panelX + 12, panelY + 28);
+        ctx.font = "800 18px system-ui, sans-serif";
+        trainingLines.forEach((line, index) => {
+          ctx.fillText(line, panelX + 12, panelY + 58 + index * 24);
+        });
       }
       if (state.devMode) {
         ctx.fillStyle = "#ffdd57";
