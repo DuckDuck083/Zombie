@@ -272,6 +272,7 @@
           <p>Move or point the mouse to aim. Your gun sprays in the direction you face, ammo boxes keep you firing, and coins buy weapons, upgrades, and mercenaries.</p>
           <p><span class="kbd">W</span> <span class="kbd">A</span> <span class="kbd">S</span> <span class="kbd">D</span> or arrows to move. Mouse turns. Right click uses your secondary. <span class="kbd">R</span> reloads. <span class="kbd">Q</span> uses coin upgrades. Press <span class="kbd">Space</span> to start or restart.</p>
           <button class="primary" id="startBtn">Start Run</button>
+          <button class="primary" id="trainingBtn">Training Mode</button>
         </div>
       </div>
     </section>
@@ -305,6 +306,9 @@
         <div><span class="dot" style="background:#8df06a"></span>Infector: poison damage over time</div>
         <div><span class="dot" style="background:#4abf78"></span>Trapper: leaves sticky traps</div>
       </div>
+
+      <div class="panel-title">Training</div>
+      <div class="legend" id="trainingText">Select Training Mode at the start to practice weapons and learn zombie types.</div>
     </aside>
   </main>
 
@@ -313,6 +317,7 @@
     const ctx = canvas.getContext("2d");
     const overlay = document.getElementById("overlay");
     const startBtn = document.getElementById("startBtn");
+    const trainingBtn = document.getElementById("trainingBtn");
     const ui = {
       health: document.getElementById("health"),
       coins: document.getElementById("coins"),
@@ -321,7 +326,8 @@
       kills: document.getElementById("kills"),
       shop: document.getElementById("shop"),
       upgradeShop: document.getElementById("upgradeShop"),
-      secondaryShop: document.getElementById("secondaryShop")
+      secondaryShop: document.getElementById("secondaryShop"),
+      trainingText: document.getElementById("trainingText")
     };
 
     const world = { w: 2200, h: 1600 };
@@ -347,6 +353,26 @@
         spread: 0,
         color: "#ffd15c",
         size: 4
+      },
+      {
+        id: "whip",
+        name: "Razor Whip",
+        cost: 70,
+        detail: "short range, high damage sweep",
+        cooldown: 560,
+        speed: 0,
+        damage: 76,
+        ammoCost: 0,
+        magSize: 1,
+        reloadTime: 0,
+        life: 0.16,
+        pellets: 1,
+        spread: 0,
+        melee: true,
+        range: 120,
+        arc: 0.9,
+        color: "#ff5e8f",
+        size: 5
       },
       {
         id: "burst",
@@ -534,6 +560,7 @@
       zombies: [],
       bullets: [],
       enemyShots: [],
+      dummies: [],
       traps: [],
       pickups: [],
       mercs: [],
@@ -555,6 +582,9 @@
       secondaryCooldown: 0,
       sodaTimer: 0,
       kills: 0,
+      mode: "run",
+      trainingStep: 0,
+      trainingKills: 0,
       wave: 1,
       spawnTimer: 0,
       shotTimer: 0,
@@ -566,13 +596,15 @@
       shopDirty: true
     };
 
-    function resetGame() {
+    function resetGame(mode = "run") {
       state.running = true;
+      state.mode = mode;
       state.lastTime = performance.now();
       state.player = { x: world.w / 2, y: world.h / 2, radius: 13, speed: 245, hp: 100, faceX: 1, faceY: 0, invuln: 0, slowTimer: 0, infectTimer: 0, trapTimer: 0 };
       state.zombies = [];
       state.bullets = [];
       state.enemyShots = [];
+      state.dummies = [];
       state.traps = [];
       state.pickups = [];
       state.mercs = [];
@@ -596,6 +628,8 @@
       state.cheatBuffer = "";
       state.devMode = false;
       state.kills = 0;
+      state.trainingStep = 0;
+      state.trainingKills = 0;
       state.wave = 1;
       state.spawnTimer = 0;
       state.shotTimer = 0;
@@ -605,6 +639,7 @@
       for (let i = 0; i < 5; i++) spawnPickup("ammo");
       for (let i = 0; i < 3; i++) spawnPickup("health");
       state.shopDirty = true;
+      if (mode === "training") setupTrainingStep(0);
       overlay.classList.add("hidden");
       updateUi();
       requestAnimationFrame(loop);
@@ -656,6 +691,48 @@
       });
     }
 
+    const trainingSteps = [
+      "Move with WASD or arrow keys. Aim with the mouse. Break the target dummies with your starting pistol.",
+      "Weapon practice: buy or equip weapons from the shop. Try the Razor Whip up close and the Sniper at long range.",
+      "Zombie lesson: shamblers are basic, runners are fast, brutes are tanky, spitters shoot from range, splitters burst into crawlers.",
+      "Special lesson: chillers slow you, infectors poison you, and trappers leave sticky circles. Keep moving and use pickups.",
+      "Training complete. Press Space to start a normal run, or keep practicing here."
+    ];
+
+    function setupTrainingStep(step) {
+      state.trainingStep = step;
+      state.dummies = [];
+      state.zombies = [];
+      state.traps = [];
+      state.enemyShots = [];
+      state.trainingKills = 0;
+      state.money = Math.max(state.money, 500);
+      state.ammo = Math.max(state.ammo, 240);
+
+      if (step === 0 || step === 1) {
+        for (let i = 0; i < 7; i++) {
+          state.dummies.push({
+            x: state.player.x + 260 + i * 58,
+            y: state.player.y + (i % 2 === 0 ? -70 : 70),
+            radius: 17,
+            hp: step === 0 ? 45 : 90,
+            maxHp: step === 0 ? 45 : 90
+          });
+        }
+      }
+      if (step === 2) {
+        zombieTypes.slice(0, 5).forEach((type, i) => spawnZombie(type, state.player.x + 260 + i * 75, state.player.y - 80 + i * 38));
+      }
+      if (step === 3) {
+        zombieTypes.slice(5).forEach((type, i) => spawnZombie(type, state.player.x + 280 + i * 105, state.player.y - 90 + i * 80));
+      }
+      updateTrainingText();
+    }
+
+    function updateTrainingText() {
+      ui.trainingText.textContent = state.mode === "training" ? trainingSteps[state.trainingStep] : "Select Training Mode at the start to practice weapons and learn zombie types.";
+    }
+
     function levelOf(id) {
       return state.upgradeLevels[id] || 0;
     }
@@ -666,6 +743,57 @@
       const cooldownScale = options.ignoreUpgrades ? 1 : Math.max(0.52, 1 - levelOf("fireRate") * 0.09);
       const ammoCost = options.free ? 0 : weapon.ammoCost;
       if (!options.free && state.reloadTimer > 0) return;
+      if (weapon.melee) {
+        if (state.shotTimer > 0) return;
+        state.shotTimer = weapon.cooldown * cooldownScale;
+        const baseAngle = Math.atan2(source.faceY, source.faceX);
+        const damage = weapon.damage * (Math.random() < 0.09 ? 3 : 1) * (state.sodaTimer > 0 ? 1.65 : 1);
+        for (let z = state.zombies.length - 1; z >= 0; z--) {
+          const zombie = state.zombies[z];
+          const dx = zombie.x - source.x;
+          const dy = zombie.y - source.y;
+          const distance = Math.hypot(dx, dy);
+          const angleDiff = Math.atan2(Math.sin(Math.atan2(dy, dx) - baseAngle), Math.cos(Math.atan2(dy, dx) - baseAngle));
+          if (distance <= weapon.range + zombie.radius && Math.abs(angleDiff) <= weapon.arc) {
+            zombie.hp -= damage;
+            addParticles(zombie.x, zombie.y, weapon.color, 8);
+            if (zombie.hp <= 0) killZombie(z);
+          }
+        }
+        for (let d = state.dummies.length - 1; d >= 0; d--) {
+          const dummy = state.dummies[d];
+          const dx = dummy.x - source.x;
+          const dy = dummy.y - source.y;
+          const distance = Math.hypot(dx, dy);
+          const angleDiff = Math.atan2(Math.sin(Math.atan2(dy, dx) - baseAngle), Math.cos(Math.atan2(dy, dx) - baseAngle));
+          if (distance <= weapon.range + dummy.radius && Math.abs(angleDiff) <= weapon.arc) {
+            dummy.hp -= damage;
+            addParticles(dummy.x, dummy.y, weapon.color, 8);
+            if (dummy.hp <= 0) {
+              state.dummies.splice(d, 1);
+              state.trainingKills += 1;
+            }
+          }
+        }
+        state.bullets.push({
+          x: source.x,
+          y: source.y,
+          vx: source.faceX,
+          vy: source.faceY,
+          life: weapon.life,
+          damage: 0,
+          radius: weapon.range,
+          color: weapon.color,
+          pierce: 0,
+          homing: false,
+          aoeRadius: 0,
+          melee: true,
+          arc: weapon.arc,
+          faceX: source.faceX,
+          faceY: source.faceY
+        });
+        return;
+      }
       if (state.shotTimer > 0) return;
       if (!options.free && state.magazine < ammoCost) {
         startReload();
@@ -945,11 +1073,13 @@
         state.waveTimer = 0;
       }
 
-      state.spawnTimer -= dt;
-      const targetCount = 9 + state.wave * 4;
-      if (state.spawnTimer <= 0 && state.zombies.length < targetCount) {
-        spawnZombie();
-        state.spawnTimer = Math.max(0.16, 1.05 - state.wave * 0.055);
+      if (state.mode !== "training") {
+        state.spawnTimer -= dt;
+        const targetCount = 9 + state.wave * 4;
+        if (state.spawnTimer <= 0 && state.zombies.length < targetCount) {
+          spawnZombie();
+          state.spawnTimer = Math.max(0.16, 1.05 - state.wave * 0.055);
+        }
       }
 
       state.pickupTimer -= dt;
@@ -1070,6 +1200,10 @@
         const bullet = state.bullets[i];
         let remove = bullet.life <= 0 || bullet.x < -80 || bullet.x > world.w + 80 || bullet.y < -80 || bullet.y > world.h + 80;
         let exploded = false;
+        if (bullet.melee) {
+          if (remove) state.bullets.splice(i, 1);
+          continue;
+        }
         if (remove && bullet.aoeRadius) {
           explodeBullet(bullet);
           exploded = true;
@@ -1088,6 +1222,19 @@
               if (zombie.hp <= 0) killZombie(z);
               if (bullet.pierce <= 0) remove = true;
             }
+          }
+        }
+        for (let d = state.dummies.length - 1; d >= 0 && !remove; d--) {
+          const dummy = state.dummies[d];
+          if (dist(bullet, dummy) < bullet.radius + dummy.radius) {
+            dummy.hp -= bullet.damage;
+            addParticles(bullet.x, bullet.y, bullet.color, 5);
+            bullet.pierce -= 1;
+            if (dummy.hp <= 0) {
+              state.dummies.splice(d, 1);
+              state.trainingKills += 1;
+            }
+            if (bullet.pierce <= 0) remove = true;
           }
         }
         if (remove && bullet.aoeRadius && !exploded) explodeBullet(bullet);
@@ -1202,6 +1349,11 @@
         if (state.explosions[i].life <= 0) state.explosions.splice(i, 1);
       }
 
+      if (state.mode === "training") {
+        if ((state.trainingStep === 0 || state.trainingStep === 1) && state.dummies.length === 0) setupTrainingStep(state.trainingStep + 1);
+        if ((state.trainingStep === 2 || state.trainingStep === 3) && state.zombies.length === 0) setupTrainingStep(state.trainingStep + 1);
+      }
+
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const particle = state.particles[i];
         particle.x += particle.vx * dt;
@@ -1273,7 +1425,7 @@
         ctx.fillStyle = "#f8fbff";
         ctx.font = "900 13px system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`HEALTH ${Math.ceil(state.player.hp)}`, width / 2, 34);
+        ctx.fillText(`HEALTH ${Math.ceil(state.player.hp)}   COINS ${state.money}`, width / 2, 34);
         ctx.textAlign = "start";
       }
 
@@ -1368,8 +1520,27 @@
         ctx.textBaseline = "alphabetic";
       }
 
-      for (const bullet of state.bullets) drawCircle(bullet, 0, 0, bullet.color);
+      for (const bullet of state.bullets) {
+        if (!bullet.melee) drawCircle(bullet, 0, 0, bullet.color);
+      }
+      for (const bullet of state.bullets) {
+        if (!bullet.melee) continue;
+        const angle = Math.atan2(bullet.faceY, bullet.faceX);
+        ctx.beginPath();
+        ctx.arc(bullet.x, bullet.y, bullet.radius, angle - bullet.arc, angle + bullet.arc);
+        ctx.strokeStyle = "rgba(255, 94, 143, 0.75)";
+        ctx.lineWidth = 8;
+        ctx.stroke();
+      }
       for (const shot of state.enemyShots) drawCircle(shot, 0, 0, "#24e381");
+
+      for (const dummy of state.dummies) {
+        drawCircle(dummy, 0, 0, "#f1c16b");
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(dummy.x - 18, dummy.y - 26, 36, 4);
+        ctx.fillStyle = "#fff1a3";
+        ctx.fillRect(dummy.x - 18, dummy.y - 26, 36 * clamp(dummy.hp / dummy.maxHp, 0, 1), 4);
+      }
 
       for (const zombie of state.zombies) {
         drawCircle(zombie, 0, 0, zombie.type.color);
@@ -1446,6 +1617,15 @@
         const status = state.secondaryCooldown > 0 ? `${state.secondaryCooldown.toFixed(1)}s` : "ready";
         ctx.fillText(`Right click: ${secondary.name} (${status})`, 26, height - 72);
       }
+      if (state.mode === "training") {
+        ctx.fillStyle = "rgba(8,10,12,0.72)";
+        ctx.fillRect(14, 14, Math.min(520, width - 28), 56);
+        ctx.fillStyle = "#f8fbff";
+        ctx.font = "800 14px system-ui, sans-serif";
+        ctx.fillText(`Training ${state.trainingStep + 1}/${trainingSteps.length}`, 26, 36);
+        ctx.font = "700 12px system-ui, sans-serif";
+        ctx.fillText(trainingSteps[state.trainingStep], 26, 56);
+      }
       if (state.devMode) {
         ctx.fillStyle = "#ffdd57";
         ctx.font = "900 13px system-ui, sans-serif";
@@ -1483,6 +1663,7 @@
       ui.ammo.textContent = `${state.magazine}/${state.ammo}`;
       ui.wave.textContent = state.wave;
       ui.kills.textContent = state.kills;
+      updateTrainingText();
       if (state.shopDirty) {
         renderShop();
         renderUpgradeShop();
@@ -1651,7 +1832,8 @@
       state.pointer.active = false;
     });
 
-    startBtn.addEventListener("click", resetGame);
+    startBtn.addEventListener("click", () => resetGame("run"));
+    trainingBtn.addEventListener("click", () => resetGame("training"));
     window.addEventListener("resize", () => {
       resizeCanvas();
       render();
