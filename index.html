@@ -592,6 +592,7 @@
       mode: "run",
       trainingStep: 0,
       trainingKills: 0,
+      trainingRespawnTimer: 0,
       tipIndex: 0,
       tipTimer: 0,
       wave: 1,
@@ -641,6 +642,7 @@
       state.kills = 0;
       state.trainingStep = 0;
       state.trainingKills = 0;
+      state.trainingRespawnTimer = 0;
       state.tipIndex = 0;
       state.tipTimer = 0;
       state.wave = 1;
@@ -709,7 +711,7 @@
       "Practice weapons now. Buy gear in the shop, use the Razor Whip up close, and use the Sniper from far away.",
       "Fight a bigger mixed wave. Shamblers are basic, runners are fast, brutes are tough, spitters shoot, and splitters break apart.",
       "Fight special zombies. Chillers slow you, infectors poison you, and trappers leave sticky circles on the ground.",
-      "Training complete. Press Space to start a normal run, or keep practicing here."
+      "Training complete. Keep practicing here. Targets and zombies will respawn after you clear them."
     ];
 
     const gameplayTips = [
@@ -742,6 +744,7 @@
       state.traps = [];
       state.enemyShots = [];
       state.trainingKills = 0;
+      state.trainingRespawnTimer = 0;
       state.money = Math.max(state.money, 500);
       state.ammo = Math.max(state.ammo, 240);
 
@@ -769,6 +772,40 @@
           const type = zombieTypes[5 + (i % (zombieTypes.length - 5))];
           spawnZombie(type, state.player.x + 300 + (i % 6) * 92, state.player.y - 190 + Math.floor(i / 6) * 210);
         }
+      }
+      updateTrainingText();
+    }
+
+    function setupEndlessTrainingPractice() {
+      state.dummies = [];
+      state.zombies = [];
+      state.traps = [];
+      state.enemyShots = [];
+      state.trainingKills = 0;
+      state.trainingRespawnTimer = 0;
+      state.money = Math.max(state.money, 500);
+      state.ammo = Math.max(state.ammo, 240);
+
+      for (let i = 0; i < 12; i++) {
+        const row = Math.floor(i / 6);
+        state.dummies.push({
+          x: clamp(state.player.x - 220 + (i % 6) * 78, 60, world.w - 60),
+          y: clamp(state.player.y - 190 + row * 110, 60, world.h - 60),
+          radius: 17,
+          hp: 90,
+          maxHp: 90
+        });
+      }
+
+      for (let i = 0; i < 18; i++) {
+        const angle = (Math.PI * 2 * i) / 18;
+        const radius = 330 + (i % 3) * 70;
+        const type = zombieTypes[i % zombieTypes.length];
+        spawnZombie(
+          type,
+          clamp(state.player.x + Math.cos(angle) * radius, 60, world.w - 60),
+          clamp(state.player.y + Math.sin(angle) * radius, 60, world.h - 60)
+        );
       }
       updateTrainingText();
     }
@@ -1157,7 +1194,6 @@
         state.ammo = 999999;
         state.magazine = weapon.magSize;
         state.reloadTimer = 0;
-        state.shotTimer = 0;
         state.secondaryCooldown = 0;
       }
       if (levelOf("regen") > 0 && p.hp < 100 && p.infectTimer <= 0) {
@@ -1458,6 +1494,10 @@
       if (state.mode === "training") {
         if ((state.trainingStep === 0 || state.trainingStep === 1) && state.dummies.length === 0) setupTrainingStep(state.trainingStep + 1);
         if ((state.trainingStep === 2 || state.trainingStep === 3) && state.zombies.length === 0) setupTrainingStep(state.trainingStep + 1);
+        if (state.trainingStep === 4 && state.dummies.length === 0 && state.zombies.length === 0) {
+          state.trainingRespawnTimer += dt;
+          if (state.trainingRespawnTimer >= 1.5) setupEndlessTrainingPractice();
+        }
       }
 
       for (let i = state.particles.length - 1; i >= 0; i--) {
