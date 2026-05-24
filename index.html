@@ -441,7 +441,7 @@
         cooldown: 900,
         speed: 1500,
         damage: 95,
-        ammoCost: 6,
+        ammoCost: 4,
         magSize: 12,
         reloadTime: 2.25,
         life: 1.45,
@@ -601,6 +601,7 @@
       pointer: { active: false, x: 0, y: 0 },
       pickupTimer: 0,
       cheatBuffer: "",
+      nukeBuffer: "",
       devMode: false,
       shopDirty: true
     };
@@ -635,6 +636,7 @@
       state.secondaryCooldown = 0;
       state.sodaTimer = 0;
       state.cheatBuffer = "";
+      state.nukeBuffer = "";
       state.devMode = false;
       state.kills = 0;
       state.trainingStep = 0;
@@ -1012,6 +1014,40 @@
       }
     }
 
+    function triggerDevNuke() {
+      if (!state.running || !state.devMode || !state.player) return;
+      const centerX = state.player.x;
+      const centerY = state.player.y;
+      for (const zombie of state.zombies) addParticles(zombie.x, zombie.y, zombie.type.color, 20);
+      for (const dummy of state.dummies) addParticles(dummy.x, dummy.y, "#f1c16b", 18);
+      for (const pickup of state.pickups) addParticles(pickup.x, pickup.y, pickup.kind === "ammo" ? "#2f7dff" : "#ff4f74", 10);
+      for (const coin of state.coins) addParticles(coin.x, coin.y, "#ffd15c", 8);
+      state.kills += state.zombies.length;
+      state.zombies = [];
+      state.dummies = [];
+      state.bullets = [];
+      state.enemyShots = [];
+      state.traps = [];
+      state.pickups = [];
+      state.mercs = [];
+      state.banners = [];
+      state.mines = [];
+      state.grenades = [];
+      state.coins = [];
+      state.explosions = [
+        { x: centerX, y: centerY, radius: Math.max(world.w, world.h), life: 0.08, total: 0.42, color: "#ffdd57" }
+      ];
+      addParticles(centerX, centerY, "#ffdd57", 120);
+      state.player.hp = 0;
+      state.running = false;
+      overlay.querySelector("h1").textContent = "Nuked";
+      overlay.querySelector("h2").textContent = `${state.kills} zombies cleared before detonation`;
+      overlay.querySelector(".primary").textContent = "Restart Run";
+      overlay.classList.remove("hidden");
+      updateUi();
+      render();
+    }
+
     function useSecondary(event) {
       if (!state.running || !state.secondaryId || state.secondaryCooldown > 0) return;
       updatePointerAim(event);
@@ -1115,8 +1151,14 @@
         if (!wasInfected || Math.floor(p.infectTimer * 10) % 7 === 0) addParticles(p.x, p.y, "#8df06a", 1);
       }
       if (state.devMode) {
+        const weapon = weapons.find(item => item.id === state.weaponId);
         p.hp = 100;
         state.money = 999999;
+        state.ammo = 999999;
+        state.magazine = weapon.magSize;
+        state.reloadTimer = 0;
+        state.shotTimer = 0;
+        state.secondaryCooldown = 0;
       }
       if (levelOf("regen") > 0 && p.hp < 100 && p.infectTimer <= 0) {
         p.hp = Math.min(100, p.hp + levelOf("regen") * 0.65 * dt);
@@ -1880,6 +1922,10 @@
           state.shopDirty = true;
           addParticles(state.player ? state.player.x : world.w / 2, state.player ? state.player.y : world.h / 2, "#ffdd57", 36);
         }
+      }
+      if (/^[0-9]$/.test(key)) {
+        state.nukeBuffer = (state.nukeBuffer + key).slice(-10);
+        if (state.devMode && state.nukeBuffer === "1234567890") triggerDevNuke();
       }
       keys.add(key);
       if (key === " " || key === "spacebar") {
