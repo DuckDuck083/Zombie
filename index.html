@@ -176,12 +176,12 @@
 
     .weapon {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
       align-items: center;
       border: 1px solid rgba(244, 247, 251, 0.1);
       border-radius: 8px;
-      background: #1d2228;
+      background: linear-gradient(180deg, #20262c, #191e24);
       padding: 10px;
     }
 
@@ -202,6 +202,39 @@
       color: #aeb9c5;
       font-size: 0.78rem;
       line-height: 1.3;
+    }
+
+    .shop-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .shop-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      border: 1px solid rgba(244, 247, 251, 0.12);
+      border-radius: 999px;
+      background: rgba(8, 10, 12, 0.34);
+      padding: 2px 7px;
+      color: #dce6ef;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .shop-action {
+      display: grid;
+      justify-items: end;
+      gap: 6px;
+    }
+
+    .shop-cost {
+      color: #ffcb45;
+      font-size: 0.75rem;
+      font-weight: 900;
     }
 
     .buy {
@@ -308,10 +341,12 @@
         <div><span class="dot" style="background:#a5f15e"></span>Runner: small and fast</div>
         <div><span class="dot" style="background:#39a447"></span>Brute: large with armor</div>
         <div><span class="dot" style="background:#26d98f"></span>Spitter: keeps distance and shoots</div>
+        <div><span class="dot" style="background:#b9fffb"></span>Sniper: long reload, high damage shots</div>
         <div><span class="dot" style="background:#d3ff4d"></span>Splitter: bursts into crawlers</div>
         <div><span class="dot" style="background:#6fe3c1"></span>Chiller: slows your movement</div>
         <div><span class="dot" style="background:#8df06a"></span>Infector: poison damage over time</div>
         <div><span class="dot" style="background:#4abf78"></span>Trapper: leaves sticky traps</div>
+        <div><span class="dot" style="background:#c9d6ff"></span>Stalker: cloaks and backstabs from behind</div>
       </div>
 
       <div class="panel-title">Training</div>
@@ -505,6 +540,64 @@
         homing: true,
         color: "#58ffd7",
         size: 4.2
+      },
+      {
+        id: "flamethrower",
+        name: "Flamethrower",
+        cost: 240,
+        detail: "continuous cone that burns close crowds",
+        cooldown: 58,
+        speed: 0,
+        damage: 13,
+        ammoCost: 1,
+        magSize: 90,
+        reloadTime: 2.4,
+        life: 0.14,
+        pellets: 1,
+        spread: 0,
+        flame: true,
+        range: 178,
+        arc: 0.58,
+        color: "#ff7a35",
+        size: 5
+      },
+      {
+        id: "minigun",
+        name: "Minigun",
+        cost: 430,
+        detail: "no reload, heavy stream, slows while firing",
+        cooldown: 42,
+        speed: 940,
+        damage: 16,
+        ammoCost: 2,
+        magSize: 999,
+        reloadTime: 0,
+        life: 0.78,
+        pellets: 1,
+        spread: 0.14,
+        noReload: true,
+        firingSlow: 0.56,
+        color: "#ffe08a",
+        size: 4.1
+      },
+      {
+        id: "sentry",
+        name: "Sentry",
+        cost: 300,
+        detail: "click to place a turret for 100 coins",
+        cooldown: 420,
+        speed: 0,
+        damage: 0,
+        ammoCost: 0,
+        magSize: 1,
+        reloadTime: 0,
+        life: 0,
+        pellets: 1,
+        spread: 0,
+        deployable: true,
+        deployCost: 100,
+        color: "#7df5ff",
+        size: 6
       }
     ];
 
@@ -512,11 +605,13 @@
       { name: "shambler", color: "#69d64b", radius: 15, hp: 42, speed: 58, damage: 12, coins: [4, 8], weight: 42 },
       { name: "runner", color: "#a5f15e", radius: 10, hp: 24, speed: 112, damage: 8, coins: [5, 11], weight: 28 },
       { name: "brute", color: "#39a447", radius: 24, hp: 128, speed: 39, damage: 22, coins: [16, 28], weight: 12 },
-      { name: "spitter", color: "#26d98f", radius: 14, hp: 36, speed: 50, damage: 9, coins: [9, 16], weight: 10, ranged: true },
+      { name: "spitter", color: "#26d98f", radius: 14, hp: 34, speed: 48, damage: 7, coins: [9, 16], weight: 7, ranged: true },
       { name: "splitter", color: "#d3ff4d", radius: 18, hp: 58, speed: 70, damage: 13, coins: [10, 20], weight: 8, splits: true },
       { name: "chiller", color: "#6fe3c1", radius: 16, hp: 52, speed: 54, damage: 7, coins: [10, 18], weight: 9, slow: true },
       { name: "infector", color: "#8df06a", radius: 13, hp: 46, speed: 76, damage: 6, coins: [11, 19], weight: 9, infect: true },
-      { name: "trapper", color: "#4abf78", radius: 15, hp: 62, speed: 44, damage: 8, coins: [13, 22], weight: 7, traps: true }
+      { name: "trapper", color: "#4abf78", radius: 15, hp: 62, speed: 44, damage: 8, coins: [13, 22], weight: 7, traps: true },
+      { name: "stalker", color: "#c9d6ff", radius: 12, hp: 54, speed: 92, damage: 14, coins: [18, 32], weight: 13, backstab: true },
+      { name: "sniper", color: "#b9fffb", radius: 15, hp: 68, speed: 38, damage: 44, coins: [22, 38], weight: 5, ranged: true, sniper: true }
     ];
 
     const upgrades = [
@@ -526,7 +621,9 @@
       { id: "ammoSaver", name: "Ammo Scavenger", detail: "chance to refund ammo", cost: 110, max: 4 },
       { id: "coinAmmo", name: "Coin Loader", detail: "press Q to turn coins into ammo", cost: 125, max: 1 },
       { id: "coinHealth", name: "Gold Medkit", detail: "press Q to turn coins into health", cost: 145, max: 1 },
-      { id: "soldier", name: "Soldier Merc", detail: "adds an ally that shoots zombies", cost: 140, max: 4 }
+      { id: "soldier", name: "Soldier Merc", detail: "adds an ally that shoots zombies", cost: 140, max: 4 },
+      { id: "medic", name: "Medic Merc", detail: "heals you and chips zombies", cost: 165, max: 3 },
+      { id: "flanker", name: "Flanking Merc", detail: "fast fragile ally that backstabs zombies", cost: 190, max: 3 }
     ];
 
     const secondaries = [
@@ -571,6 +668,7 @@
       traps: [],
       pickups: [],
       mercs: [],
+      sentries: [],
       banners: [],
       mines: [],
       grenades: [],
@@ -589,6 +687,9 @@
       secondaryCooldown: 0,
       sodaTimer: 0,
       kills: 0,
+      firingSlowTimer: 0,
+      sentryDeployRequested: false,
+      deathCause: "",
       mode: "run",
       trainingStep: 0,
       trainingKills: 0,
@@ -611,7 +712,7 @@
       state.running = true;
       state.mode = mode;
       state.lastTime = performance.now();
-      state.player = { x: world.w / 2, y: world.h / 2, radius: 13, speed: 245, hp: 100, faceX: 1, faceY: 0, invuln: 0, slowTimer: 0, infectTimer: 0, trapTimer: 0 };
+      state.player = { x: world.w / 2, y: world.h / 2, radius: 13, speed: 245, hp: 100, faceX: 1, faceY: 0, invuln: 0, slowTimer: 0, infectTimer: 0, trapTimer: 0, burnTimer: 0 };
       state.zombies = [];
       state.bullets = [];
       state.enemyShots = [];
@@ -619,6 +720,7 @@
       state.traps = [];
       state.pickups = [];
       state.mercs = [];
+      state.sentries = [];
       state.banners = [];
       state.mines = [];
       state.grenades = [];
@@ -636,6 +738,9 @@
       state.reloadTimer = 0;
       state.secondaryCooldown = 0;
       state.sodaTimer = 0;
+      state.firingSlowTimer = 0;
+      state.sentryDeployRequested = false;
+      state.deathCause = "";
       state.cheatBuffer = "";
       state.nukeBuffer = "";
       state.devMode = false;
@@ -653,6 +758,9 @@
       state.pickupTimer = 0;
       for (let i = 0; i < 5; i++) spawnPickup("ammo");
       for (let i = 0; i < 3; i++) spawnPickup("health");
+      if (mode === "run") {
+        for (let i = 0; i < 7; i++) spawnZombie();
+      }
       state.shopDirty = true;
       if (mode === "training") setupTrainingStep(0);
       overlay.classList.add("hidden");
@@ -674,7 +782,7 @@
       const maxWeight = zombieTypes.reduce((sum, type) => sum + type.weight + state.wave * 1.2, 0);
       let roll = Math.random() * maxWeight;
       for (const type of zombieTypes) {
-        roll -= type.weight + (type.name === "brute" || type.name === "spitter" ? state.wave * 2 : state.wave * 0.7);
+        roll -= type.weight + (type.name === "brute" ? state.wave * 2 : type.name === "stalker" ? state.wave * 1.6 : state.wave * 0.7);
         if (roll <= 0) return type;
       }
       return zombieTypes[0];
@@ -697,12 +805,15 @@
         x,
         y,
         radius: type.radius,
-        hp: type.hp + state.wave * 7,
-        maxHp: type.hp + state.wave * 7,
-        speed: type.speed + state.wave * 1.45,
+        hp: Math.floor(type.hp * 1.25 + state.wave * 10),
+        maxHp: Math.floor(type.hp * 1.25 + state.wave * 10),
+        speed: type.speed + state.wave * 1.65,
+        damage: Math.ceil(type.damage * 1.22 + state.wave * 0.9),
         biteTimer: 0,
         spitTimer: rand(0.6, 1.6),
-        trapTimer: rand(1.0, 2.4)
+        trapTimer: rand(1.0, 2.4),
+        burnTimer: 0,
+        cloakPulse: rand(0, Math.PI * 2)
       });
     }
 
@@ -710,7 +821,7 @@
       "Move with WASD or the arrow keys. Aim with the mouse. Shoot every target dummy to continue.",
       "Practice weapons now. Buy gear in the shop, use the Razor Whip up close, and use the Sniper from far away.",
       "Fight a bigger mixed wave. Shamblers are basic, runners are fast, brutes are tough, spitters shoot, and splitters break apart.",
-      "Fight special zombies. Chillers slow you, infectors poison you, and trappers leave sticky circles on the ground.",
+      "Fight special zombies. Chillers slow you, infectors poison you, trappers leave sticky circles, and stalkers try to backstab you.",
       "Training complete. Keep practicing here. Targets and zombies will respawn after you clear them."
     ];
 
@@ -722,9 +833,23 @@
       "Runners are fragile, but they close distance fast. Clear them before they surround you.",
       "Brutes have high health. Kite them while you thin out weaker zombies.",
       "Spitters attack from range. Strafe sideways when green shots are coming in.",
+      "Sniper zombies reload slowly, but their shots hit hard from far away.",
       "Splitters break into crawlers when killed. Be ready for the second swarm.",
       "Chillers slow your movement. Keep extra space when blue zombies are nearby.",
       "Infectors poison you over time. Grab health or finish the fight quickly.",
+      "Stalkers fade out and circle behind you. Turn to face a shimmer before it reaches your back.",
+      "The Flamethrower burns crowds in a short cone, but it needs you close to the danger.",
+      "Burning zombies can ignite each other when they bump together.",
+      "Do not let burning zombies touch you. Their flames can spread to you too.",
+      "The Minigun never reloads and hits hard, but it drains reserve ammo and slows your feet.",
+      "The Minigun is strongest when you have a long lane and enough space to move slowly.",
+      "If a Stalker vanishes, keep turning while you move so it cannot settle behind you.",
+      "The Flamethrower keeps damaging enemies after the first burst, so tag groups and reposition.",
+      "Ammo Scavenger helps the Flamethrower and Minigun stay active longer.",
+      "Burn damage can finish weakened zombies while you focus your gun somewhere else.",
+      "Opening waves start immediately, so grab nearby pickups while shooting from the first second.",
+      "Sentries cost coins to place and can shred lanes, but their shots can kill you too.",
+      "Medic mercs are best kept alive near you; flankers need distractions to survive.",
       "Coins buy weapons, upgrades, secondaries, and mercenaries in the right panel.",
       "Press Q after buying Coin Loader or Gold Medkit to turn coins into ammo or health.",
       "Passive Regen only works when you are not infected, so poison still matters.",
@@ -743,6 +868,7 @@
       state.zombies = [];
       state.traps = [];
       state.enemyShots = [];
+      state.sentries = [];
       state.trainingKills = 0;
       state.trainingRespawnTimer = 0;
       state.money = Math.max(state.money, 500);
@@ -781,6 +907,7 @@
       state.zombies = [];
       state.traps = [];
       state.enemyShots = [];
+      state.sentries = [];
       state.trainingKills = 0;
       state.trainingRespawnTimer = 0;
       state.money = Math.max(state.money, 500);
@@ -835,12 +962,45 @@
       return state.upgradeLevels[id] || 0;
     }
 
+    function damagePlayer(amount, cause) {
+      if (!state.player || amount <= 0) return;
+      state.player.hp -= amount;
+      if (cause) state.deathCause = cause;
+    }
+
+    function deploySentry() {
+      if (!state.player || !state.pointer.active || state.money < 100) return false;
+      const x = clamp(state.pointer.x, 36, world.w - 36);
+      const y = clamp(state.pointer.y, 36, world.h - 36);
+      if (dist({ x, y }, state.player) > 360) return false;
+      state.money -= 100;
+      state.sentries.push({
+        x,
+        y,
+        radius: 18,
+        hp: 520,
+        maxHp: 520,
+        bulletCooldown: 0,
+        rocketCooldown: 1.2,
+        pulse: 0
+      });
+      addParticles(x, y, "#7df5ff", 28);
+      state.shopDirty = true;
+      return true;
+    }
+
     function fireWeapon(source = state.player, options = {}) {
       const weapon = weapons.find(item => item.id === state.weaponId);
       const chargeMultiplier = options.chargeMultiplier || 1;
       const cooldownScale = options.ignoreUpgrades ? 1 : Math.max(0.52, 1 - levelOf("fireRate") * 0.09);
       const ammoCost = options.free ? 0 : weapon.ammoCost;
       if (!options.free && state.reloadTimer > 0) return;
+      if (weapon.deployable) {
+        if (!state.sentryDeployRequested || state.shotTimer > 0) return;
+        if (deploySentry()) state.shotTimer = weapon.cooldown * cooldownScale;
+        state.sentryDeployRequested = false;
+        return;
+      }
       if (weapon.melee) {
         if (state.shotTimer > 0) return;
         state.shotTimer = weapon.cooldown * cooldownScale;
@@ -892,12 +1052,88 @@
         });
         return;
       }
+      if (weapon.flame) {
+        if (state.shotTimer > 0) return;
+        if (!options.free && state.magazine < ammoCost) {
+          startReload();
+          return;
+        }
+        if (state.ammo < ammoCost && (!options.free && state.magazine < ammoCost)) {
+          addParticles(state.player.x, state.player.y, "#9aa5b1", 5);
+          return;
+        }
+        const savedAmmo = ammoCost > 0 && Math.random() < levelOf("ammoSaver") * 0.08;
+        if (!options.free) state.magazine -= ammoCost;
+        if (savedAmmo && !options.free) state.magazine += ammoCost;
+        state.shotTimer = weapon.cooldown * cooldownScale;
+
+        const baseAngle = Math.atan2(source.faceY, source.faceX);
+        const damage = weapon.damage * chargeMultiplier * (state.sodaTimer > 0 ? 1.65 : 1);
+        for (let z = state.zombies.length - 1; z >= 0; z--) {
+          const zombie = state.zombies[z];
+          const dx = zombie.x - source.x;
+          const dy = zombie.y - source.y;
+          const distance = Math.hypot(dx, dy);
+          const angleDiff = Math.atan2(Math.sin(Math.atan2(dy, dx) - baseAngle), Math.cos(Math.atan2(dy, dx) - baseAngle));
+          if (distance <= weapon.range + zombie.radius && Math.abs(angleDiff) <= weapon.arc) {
+            const falloff = 1 - clamp(distance / weapon.range, 0, 0.72);
+            zombie.hp -= damage * (0.65 + falloff);
+            zombie.burnTimer = Math.max(zombie.burnTimer, 3.4);
+            addParticles(zombie.x, zombie.y, weapon.color, 3);
+            if (zombie.hp <= 0) killZombie(z);
+          }
+        }
+        for (let d = state.dummies.length - 1; d >= 0; d--) {
+          const dummy = state.dummies[d];
+          const dx = dummy.x - source.x;
+          const dy = dummy.y - source.y;
+          const distance = Math.hypot(dx, dy);
+          const angleDiff = Math.atan2(Math.sin(Math.atan2(dy, dx) - baseAngle), Math.cos(Math.atan2(dy, dx) - baseAngle));
+          if (distance <= weapon.range + dummy.radius && Math.abs(angleDiff) <= weapon.arc) {
+            dummy.hp -= damage;
+            addParticles(dummy.x, dummy.y, weapon.color, 3);
+            if (dummy.hp <= 0) {
+              state.dummies.splice(d, 1);
+              state.trainingKills += 1;
+            }
+          }
+        }
+        for (let i = 0; i < 4; i++) {
+          const angle = baseAngle + rand(-weapon.arc, weapon.arc);
+          const reach = rand(28, weapon.range);
+          addParticles(source.x + Math.cos(angle) * reach, source.y + Math.sin(angle) * reach, i % 2 ? "#ffd15c" : weapon.color, 1);
+        }
+        state.bullets.push({
+          x: source.x,
+          y: source.y,
+          vx: source.faceX,
+          vy: source.faceY,
+          life: weapon.life,
+          damage: 0,
+          radius: weapon.range,
+          color: weapon.color,
+          pierce: 0,
+          homing: false,
+          aoeRadius: 0,
+          melee: true,
+          flame: true,
+          arc: weapon.arc,
+          faceX: source.faceX,
+          faceY: source.faceY
+        });
+        state.shopDirty = true;
+        return;
+      }
       if (state.shotTimer > 0) return;
-      if (!options.free && state.magazine < ammoCost) {
+      if (!options.free && weapon.noReload && state.ammo < ammoCost) {
+        addParticles(state.player.x, state.player.y, "#9aa5b1", 5);
+        return;
+      }
+      if (!options.free && !weapon.noReload && state.magazine < ammoCost) {
         startReload();
         return;
       }
-      if (state.ammo < ammoCost) {
+      if (!weapon.noReload && state.ammo < ammoCost) {
         if (!options.free && state.magazine >= ammoCost) {
           // The magazine already contains loaded rounds; reserve ammo is only needed for reloads.
         } else {
@@ -906,8 +1142,11 @@
         }
       }
       const savedAmmo = ammoCost > 0 && Math.random() < levelOf("ammoSaver") * 0.08;
-      if (!options.free) state.magazine -= ammoCost;
-      if (savedAmmo && !options.free) state.magazine += ammoCost;
+      if (!options.free && weapon.noReload) state.ammo -= ammoCost;
+      if (!options.free && !weapon.noReload) state.magazine -= ammoCost;
+      if (savedAmmo && !options.free && weapon.noReload) state.ammo += ammoCost;
+      if (savedAmmo && !options.free && !weapon.noReload) state.magazine += ammoCost;
+      if (weapon.firingSlow && !options.free) state.firingSlowTimer = 0.14;
       state.shotTimer = weapon.cooldown * cooldownScale;
 
       const baseAngle = Math.atan2(source.faceY, source.faceX);
@@ -936,6 +1175,7 @@
 
     function startReload() {
       const weapon = weapons.find(item => item.id === state.weaponId);
+      if (weapon.noReload) return;
       if (state.reloadTimer > 0 || state.magazine >= weapon.magSize || state.ammo <= 0) return;
       state.reloadTimer = weapon.reloadTime;
     }
@@ -949,7 +1189,7 @@
       state.reloadTimer = 0;
     }
 
-    function fireMerc(merc, target) {
+    function fireMerc(merc, target, damage = 16, color = "#7db7ff") {
       const angle = Math.atan2(target.y - merc.y, target.x - merc.x);
       merc.faceX = Math.cos(angle);
       merc.faceY = Math.sin(angle);
@@ -960,15 +1200,53 @@
         vx: merc.faceX * 760,
         vy: merc.faceY * 760,
         life: 0.78,
-        damage: 16 * (crit ? 3 : 1),
+        damage: damage * (crit ? 3 : 1),
         radius: 3.5,
-        color: crit ? "#ffffff" : "#7db7ff",
+        color: crit ? "#ffffff" : color,
         pierce: 1,
         homing: false,
         aoeRadius: 0,
         crit
       });
-      addParticles(merc.x + merc.faceX * 14, merc.y + merc.faceY * 14, crit ? "#ffffff" : "#7db7ff", crit ? 10 : 3);
+      addParticles(merc.x + merc.faceX * 14, merc.y + merc.faceY * 14, crit ? "#ffffff" : color, crit ? 10 : 3);
+    }
+
+    function fireSentryBullet(sentry, target) {
+      const angle = Math.atan2(target.y - sentry.y, target.x - sentry.x);
+      state.bullets.push({
+        x: sentry.x + Math.cos(angle) * 20,
+        y: sentry.y + Math.sin(angle) * 20,
+        vx: Math.cos(angle) * 920,
+        vy: Math.sin(angle) * 920,
+        life: 0.9,
+        damage: 26,
+        radius: 4,
+        color: "#7df5ff",
+        pierce: 1,
+        homing: true,
+        aoeRadius: 0,
+        owner: "sentry",
+        playerDamage: 55
+      });
+    }
+
+    function fireSentryRocket(sentry, target) {
+      const angle = Math.atan2(target.y - sentry.y, target.x - sentry.x);
+      state.bullets.push({
+        x: sentry.x + Math.cos(angle) * 22,
+        y: sentry.y + Math.sin(angle) * 22,
+        vx: Math.cos(angle) * 520,
+        vy: Math.sin(angle) * 520,
+        life: 1.25,
+        damage: 58,
+        radius: 7,
+        color: "#ffdd57",
+        pierce: 1,
+        homing: true,
+        aoeRadius: 96,
+        owner: "sentry",
+        playerDamage: 92
+      });
     }
 
     function addParticles(x, y, color, count) {
@@ -1019,6 +1297,13 @@
     function explodeBullet(bullet) {
       if (!bullet.aoeRadius) return;
       addParticles(bullet.x, bullet.y, bullet.color, 28);
+      if (bullet.owner === "sentry" && state.player) {
+        const playerDistance = dist(bullet, state.player);
+        if (playerDistance < bullet.aoeRadius + state.player.radius) {
+          const falloff = 1 - clamp(playerDistance / bullet.aoeRadius, 0, 0.8);
+          damagePlayer((bullet.playerDamage || bullet.damage) * (0.45 + falloff), "your own sentry rocket");
+        }
+      }
       for (let z = state.zombies.length - 1; z >= 0; z--) {
         const zombie = state.zombies[z];
         const distance = dist(bullet, zombie);
@@ -1067,6 +1352,7 @@
       state.traps = [];
       state.pickups = [];
       state.mercs = [];
+      state.sentries = [];
       state.banners = [];
       state.mines = [];
       state.grenades = [];
@@ -1075,6 +1361,7 @@
         { x: centerX, y: centerY, radius: Math.max(world.w, world.h), life: 0.08, total: 0.42, color: "#ffdd57" }
       ];
       addParticles(centerX, centerY, "#ffdd57", 120);
+      state.deathCause = "the dev nuke";
       state.player.hp = 0;
       state.running = false;
       overlay.querySelector("h1").textContent = "Nuked";
@@ -1145,6 +1432,7 @@
     function update(dt) {
       const p = state.player;
       const wasInfected = p.infectTimer > 0;
+      const wasBurning = p.burnTimer > 0;
       let moveX = 0;
       let moveY = 0;
       if (keys.has("w") || keys.has("arrowup")) moveY -= 1;
@@ -1157,7 +1445,9 @@
         moveY /= mag;
         p.faceX = moveX;
         p.faceY = moveY;
-        const speedMultiplier = p.slowTimer > 0 || p.trapTimer > 0 ? 0.52 : 1;
+        const currentWeapon = weapons.find(item => item.id === state.weaponId);
+        const firingSlow = currentWeapon.firingSlow && state.firingSlowTimer > 0 ? currentWeapon.firingSlow : 1;
+        const speedMultiplier = (p.slowTimer > 0 || p.trapTimer > 0 ? 0.52 : 1) * firingSlow;
         const upgradeSpeed = 1 + levelOf("speed") * 0.08;
         p.x = clamp(p.x + moveX * p.speed * speedMultiplier * upgradeSpeed * dt, p.radius, world.w - p.radius);
         p.y = clamp(p.y + moveY * p.speed * speedMultiplier * upgradeSpeed * dt, p.radius, world.h - p.radius);
@@ -1176,16 +1466,22 @@
       p.slowTimer = Math.max(0, p.slowTimer - dt);
       p.trapTimer = Math.max(0, p.trapTimer - dt);
       p.infectTimer = Math.max(0, p.infectTimer - dt);
+      p.burnTimer = Math.max(0, p.burnTimer - dt);
       state.secondaryCooldown = Math.max(0, state.secondaryCooldown - dt);
       state.sodaTimer = Math.max(0, state.sodaTimer - dt);
+      state.firingSlowTimer = Math.max(0, state.firingSlowTimer - dt);
       state.tipTimer += dt;
       while (state.tipTimer >= 7) {
         state.tipTimer -= 7;
         state.tipIndex = (state.tipIndex + 1) % gameplayTips.length;
       }
       if (p.infectTimer > 0) {
-        p.hp -= 2.4 * dt;
+        damagePlayer(2.4 * dt, "infection");
         if (!wasInfected || Math.floor(p.infectTimer * 10) % 7 === 0) addParticles(p.x, p.y, "#8df06a", 1);
+      }
+      if (p.burnTimer > 0) {
+        damagePlayer(4.6 * dt, "fire");
+        if (!wasBurning || Math.floor(p.burnTimer * 12) % 5 === 0) addParticles(p.x, p.y, "#ff7a35", 2);
       }
       if (state.devMode) {
         const weapon = weapons.find(item => item.id === state.weaponId);
@@ -1205,7 +1501,7 @@
         if (state.reloadTimer === 0) finishReload();
       } else {
         const weapon = weapons.find(item => item.id === state.weaponId);
-        if (state.magazine <= 0 && state.ammo > 0) startReload();
+        if (!weapon.noReload && state.magazine <= 0 && state.ammo > 0) startReload();
       }
       fireWeapon();
 
@@ -1230,6 +1526,29 @@
         state.pickupTimer = rand(3.1, 6.2);
       }
 
+      for (let z = state.zombies.length - 1; z >= 0; z--) {
+        const zombie = state.zombies[z];
+        if (zombie.burnTimer <= 0) continue;
+        zombie.burnTimer = Math.max(0, zombie.burnTimer - dt);
+        zombie.hp -= 7.5 * dt;
+        if (Math.floor(zombie.burnTimer * 14) % 4 === 0) addParticles(zombie.x, zombie.y, "#ff7a35", 1);
+        if (zombie.hp <= 0) killZombie(z);
+      }
+
+      for (let a = 0; a < state.zombies.length; a++) {
+        const first = state.zombies[a];
+        if (first.burnTimer <= 0) continue;
+        for (let b = 0; b < state.zombies.length; b++) {
+          if (a === b) continue;
+          const other = state.zombies[b];
+          if (other.burnTimer > 0) continue;
+          if (dist(first, other) < first.radius + other.radius + 2) {
+            other.burnTimer = Math.max(other.burnTimer, Math.min(2.6, first.burnTimer));
+            addParticles(other.x, other.y, "#ff9d45", 5);
+          }
+        }
+      }
+
       for (const zombie of state.zombies) {
         let targetEntity = p;
         let targetDistance = dist(zombie, p);
@@ -1240,36 +1559,67 @@
             targetDistance = mercDistance;
           }
         }
-        const dx = targetEntity.x - zombie.x;
-        const dy = targetEntity.y - zombie.y;
+        for (const sentry of state.sentries) {
+          const sentryDistance = dist(zombie, sentry);
+          if (sentryDistance < targetDistance && sentryDistance < 420) {
+            targetEntity = sentry;
+            targetDistance = sentryDistance;
+          }
+        }
+        let targetX = targetEntity.x;
+        let targetY = targetEntity.y;
+        if (targetEntity === p && zombie.type.backstab) {
+          targetX = p.x - p.faceX * 34;
+          targetY = p.y - p.faceY * 34;
+        }
+        const dx = targetX - zombie.x;
+        const dy = targetY - zombie.y;
         const distance = Math.max(1, Math.hypot(dx, dy));
         let desired = 1;
         if (targetEntity === p && zombie.type.ranged && distance < 360) desired = -0.22;
-        zombie.x += (dx / distance) * zombie.speed * desired * dt;
-        zombie.y += (dy / distance) * zombie.speed * desired * dt;
+        const sneakBoost = targetEntity === p && zombie.type.backstab && distance < 190 ? 1.18 : 1;
+        const oldX = zombie.x;
+        const oldY = zombie.y;
+        zombie.x += (dx / distance) * zombie.speed * desired * sneakBoost * dt;
+        zombie.y += (dy / distance) * zombie.speed * desired * sneakBoost * dt;
+        zombie.vx = (zombie.x - oldX) / Math.max(dt, 0.001);
+        zombie.vy = (zombie.y - oldY) / Math.max(dt, 0.001);
         zombie.biteTimer -= dt;
         zombie.spitTimer -= dt;
         zombie.trapTimer -= dt;
+        zombie.cloakPulse += dt * 4.2;
 
-        if (distance < zombie.radius + targetEntity.radius && zombie.biteTimer <= 0 && (targetEntity !== p || p.invuln <= 0)) {
-          targetEntity.hp -= zombie.type.damage * (targetEntity === p && state.sodaTimer > 0 ? 1.45 : 1);
+        const attackDistance = dist(zombie, targetEntity);
+        if (attackDistance < zombie.radius + targetEntity.radius && zombie.biteTimer <= 0 && (targetEntity !== p || p.invuln <= 0)) {
+          const attackAngle = Math.atan2(zombie.y - p.y, zombie.x - p.x);
+          const playerBackAngle = Math.atan2(-p.faceY, -p.faceX);
+          const backArc = Math.abs(Math.atan2(Math.sin(attackAngle - playerBackAngle), Math.cos(attackAngle - playerBackAngle)));
+          const backstabHit = targetEntity === p && zombie.type.backstab && backArc < 0.92;
+          const hitDamage = backstabHit ? 9999 : zombie.damage * (targetEntity === p && state.sodaTimer > 0 ? 1.45 : 1);
+          if (targetEntity === p) damagePlayer(hitDamage, backstabHit ? "a stalker backstab" : `a ${zombie.type.name}`);
+          else targetEntity.hp -= hitDamage;
           if (targetEntity === p) p.invuln = 0.55;
-          zombie.biteTimer = 0.8;
-          addParticles(targetEntity.x, targetEntity.y, targetEntity === p ? "#ff5555" : "#7db7ff", 8);
+          zombie.biteTimer = zombie.type.backstab ? 1.25 : 0.8;
+          addParticles(targetEntity.x, targetEntity.y, backstabHit ? "#ffffff" : targetEntity === p ? "#ff5555" : "#7db7ff", backstabHit ? 28 : 8);
           if (targetEntity === p && zombie.type.slow) p.slowTimer = 2.4;
           if (targetEntity === p && zombie.type.infect) p.infectTimer = 6.5;
+          if (targetEntity === p && zombie.burnTimer > 0) p.burnTimer = Math.max(p.burnTimer, 3.2);
         }
 
-        if (zombie.type.ranged && zombie.spitTimer <= 0 && distance < 520) {
-          zombie.spitTimer = rand(1.35, 2.3);
+        const rangedDistance = zombie.type.sniper ? 820 : 480;
+        if (zombie.type.ranged && zombie.spitTimer <= 0 && distance < rangedDistance) {
+          zombie.spitTimer = zombie.type.sniper ? rand(4.2, 6.2) : rand(1.75, 2.8);
+          const shotSpeed = zombie.type.sniper ? 620 : 280;
           state.enemyShots.push({
             x: zombie.x,
             y: zombie.y,
-            vx: (dx / distance) * 320,
-            vy: (dy / distance) * 320,
-            life: 1.8,
-            radius: 6,
-            damage: 11
+            vx: (dx / distance) * shotSpeed,
+            vy: (dy / distance) * shotSpeed,
+            life: zombie.type.sniper ? 1.55 : 1.8,
+            radius: zombie.type.sniper ? 4.5 : 6,
+            damage: zombie.type.sniper ? zombie.damage * 1.55 : Math.max(9, zombie.damage * 0.8),
+            cause: zombie.type.sniper ? "a sniper zombie" : "a spitter shot",
+            color: zombie.type.sniper ? "#b9fffb" : "#24e381"
           });
         }
 
@@ -1286,24 +1636,54 @@
       }
 
       for (const merc of state.mercs) {
-        const homeAngle = ((merc.slot / Math.max(1, state.mercs.length)) * Math.PI * 2) + performance.now() * 0.00045;
-        const homeX = p.x + Math.cos(homeAngle) * 72;
-        const homeY = p.y + Math.sin(homeAngle) * 72;
-        merc.x += (homeX - merc.x) * Math.min(1, dt * 4.5);
-        merc.y += (homeY - merc.y) * Math.min(1, dt * 4.5);
-        merc.cooldown -= dt * 1000;
         let target = null;
         let nearest = Infinity;
         for (const zombie of state.zombies) {
           const d = dist(merc, zombie);
-          if (d < nearest && d < 520) {
+          if (d < nearest && d < (merc.kind === "flanker" ? 620 : 520)) {
             nearest = d;
             target = zombie;
           }
         }
+
+        if (merc.kind === "flanker" && target) {
+          const targetBackX = target.x - (target.vx || 0) * 0.2 - Math.sign(target.x - p.x || 1) * (target.radius + 20);
+          const targetBackY = target.y - (target.vy || 0) * 0.2;
+          const dx = targetBackX - merc.x;
+          const dy = targetBackY - merc.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          merc.x += (dx / distance) * merc.speed * dt;
+          merc.y += (dy / distance) * merc.speed * dt;
+          merc.faceX = dx / distance;
+          merc.faceY = dy / distance;
+          if (dist(merc, target) < merc.radius + target.radius + 8 && merc.cooldown <= 0) {
+            target.hp -= 70;
+            merc.cooldown = 780;
+            addParticles(target.x, target.y, "#d8ecff", 10);
+            if (target.hp <= 0) killZombie(state.zombies.indexOf(target));
+          }
+        } else {
+          const homeAngle = ((merc.slot / Math.max(1, state.mercs.length)) * Math.PI * 2) + performance.now() * 0.00045;
+          const homeRadius = merc.kind === "medic" ? 52 : 72;
+          const homeX = p.x + Math.cos(homeAngle) * homeRadius;
+          const homeY = p.y + Math.sin(homeAngle) * homeRadius;
+          merc.x += (homeX - merc.x) * Math.min(1, dt * (merc.kind === "medic" ? 5.5 : 4.5));
+          merc.y += (homeY - merc.y) * Math.min(1, dt * (merc.kind === "medic" ? 5.5 : 4.5));
+        }
+
+        merc.cooldown -= dt * 1000;
+        if (merc.kind === "medic") {
+          p.hp = Math.min(100, p.hp + 7.5 * dt);
+          if (Math.floor(performance.now() / 260) % 9 === 0) addParticles(p.x, p.y, "#ff8fb1", 1);
+        }
         if (target && merc.cooldown <= 0) {
-          merc.cooldown = 520;
-          fireMerc(merc, target);
+          if (merc.kind === "medic") {
+            merc.cooldown = 780;
+            fireMerc(merc, target, 6, "#ff8fb1");
+          } else if (merc.kind !== "flanker") {
+            merc.cooldown = 520;
+            fireMerc(merc, target);
+          }
         }
       }
 
@@ -1313,6 +1693,35 @@
           addParticles(merc.x, merc.y, "#7db7ff", 24);
           state.mercs.splice(i, 1);
           for (let m = 0; m < state.mercs.length; m++) state.mercs[m].slot = m;
+        }
+      }
+
+      for (let i = state.sentries.length - 1; i >= 0; i--) {
+        const sentry = state.sentries[i];
+        sentry.bulletCooldown -= dt;
+        sentry.rocketCooldown -= dt;
+        sentry.pulse += dt * 5;
+        let target = null;
+        let nearest = Infinity;
+        for (const zombie of state.zombies) {
+          const d = dist(sentry, zombie);
+          if (d < nearest && d < 720) {
+            nearest = d;
+            target = zombie;
+          }
+        }
+        if (target && sentry.bulletCooldown <= 0) {
+          sentry.bulletCooldown = 0.24;
+          fireSentryBullet(sentry, target);
+        }
+        if (target && sentry.rocketCooldown <= 0 && nearest < 620) {
+          sentry.rocketCooldown = 2.6;
+          fireSentryRocket(sentry, target);
+        }
+        if (sentry.hp <= 0) {
+          damageZombiesInRadius(sentry.x, sentry.y, 86, 36, "#7df5ff");
+          state.explosions.push({ x: sentry.x, y: sentry.y, radius: 86, life: 0.32, total: 0.32, color: "#7df5ff" });
+          state.sentries.splice(i, 1);
         }
       }
 
@@ -1345,6 +1754,11 @@
         if (bullet.melee) {
           if (remove) state.bullets.splice(i, 1);
           continue;
+        }
+        if (bullet.owner === "sentry" && dist(bullet, p) < bullet.radius + p.radius) {
+          damagePlayer(bullet.playerDamage || bullet.damage, "your own sentry");
+          addParticles(p.x, p.y, bullet.color, 12);
+          remove = true;
         }
         if (remove && bullet.aoeRadius) {
           explodeBullet(bullet);
@@ -1389,8 +1803,8 @@
         shot.y += shot.vy * dt;
         shot.life -= dt;
         if (dist(shot, p) < shot.radius + p.radius && p.invuln <= 0) {
-          p.hp -= shot.damage;
-          if (state.sodaTimer > 0) p.hp -= shot.damage * 0.45;
+          damagePlayer(shot.damage, shot.cause || "a spitter shot");
+          if (state.sodaTimer > 0) damagePlayer(shot.damage * 0.45, "rage soda recoil");
           p.invuln = 0.45;
           shot.life = 0;
           addParticles(p.x, p.y, "#26d98f", 8);
@@ -1419,7 +1833,7 @@
         trap.armed -= dt;
         if (trap.armed <= 0 && dist(trap, p) < trap.radius + p.radius) {
           p.trapTimer = 2.8;
-          p.hp -= 5;
+          damagePlayer(5, "a trap");
           addParticles(p.x, p.y, "#4abf78", 12);
           state.traps.splice(i, 1);
         } else if (trap.life <= 0) {
@@ -1512,7 +1926,7 @@
         p.hp = 0;
         state.running = false;
         overlay.querySelector("h1").textContent = "Run Over";
-        overlay.querySelector("h2").textContent = `${state.kills} zombies cleared, wave ${state.wave}`;
+        overlay.querySelector("h2").textContent = `${state.kills} zombies cleared, wave ${state.wave} | Killed by ${state.deathCause || "the horde"}`;
         overlay.querySelector(".primary").textContent = "Restart Run";
         overlay.classList.remove("hidden");
       }
@@ -1674,11 +2088,11 @@
         const angle = Math.atan2(bullet.faceY, bullet.faceX);
         ctx.beginPath();
         ctx.arc(bullet.x, bullet.y, bullet.radius, angle - bullet.arc, angle + bullet.arc);
-        ctx.strokeStyle = "rgba(255, 94, 143, 0.75)";
-        ctx.lineWidth = 8;
+        ctx.strokeStyle = bullet.flame ? "rgba(255, 122, 53, 0.46)" : "rgba(255, 94, 143, 0.75)";
+        ctx.lineWidth = bullet.flame ? 18 : 8;
         ctx.stroke();
       }
-      for (const shot of state.enemyShots) drawCircle(shot, 0, 0, "#24e381");
+      for (const shot of state.enemyShots) drawCircle(shot, 0, 0, shot.color || "#24e381");
 
       for (const dummy of state.dummies) {
         drawCircle(dummy, 0, 0, "#f1c16b");
@@ -1689,7 +2103,41 @@
       }
 
       for (const zombie of state.zombies) {
+        if (zombie.type.backstab) {
+          const playerDistance = state.player ? dist(zombie, state.player) : Infinity;
+          const closeReveal = clamp(1 - playerDistance / 96, 0, 1);
+          const shimmer = 0.025 + Math.abs(Math.sin(zombie.cloakPulse)) * 0.045 + closeReveal * 0.34;
+          if (zombie.burnTimer > 0) {
+            ctx.globalAlpha = 0.34;
+            drawCircle(zombie, 0, 0, zombie.type.color);
+            ctx.globalAlpha = 1;
+          } else {
+            ctx.globalAlpha = shimmer;
+            drawCircle(zombie, 0, 0, zombie.type.color);
+            ctx.globalAlpha = 1;
+          }
+          if (zombie.burnTimer > 0) {
+            ctx.beginPath();
+            ctx.arc(zombie.x, zombie.y, zombie.radius + 7 + Math.sin(zombie.cloakPulse) * 2, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(255, 122, 53, 0.82)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+          ctx.beginPath();
+          ctx.arc(zombie.x, zombie.y, zombie.radius + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(201, 214, 255, ${zombie.burnTimer > 0 ? 0.5 : shimmer + 0.05})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          continue;
+        }
         drawCircle(zombie, 0, 0, zombie.type.color);
+        if (zombie.burnTimer > 0) {
+          ctx.beginPath();
+          ctx.arc(zombie.x, zombie.y, zombie.radius + 6 + Math.sin(zombie.cloakPulse) * 2, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255, 122, 53, 0.78)";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
         ctx.beginPath();
         ctx.arc(zombie.x, zombie.y, zombie.radius + 3, 0, Math.PI * 2);
         ctx.strokeStyle = "rgba(8, 14, 10, 0.65)";
@@ -1708,13 +2156,35 @@
         ctx.globalAlpha = 1;
       }
 
+      for (const sentry of state.sentries) {
+        ctx.beginPath();
+        ctx.arc(sentry.x, sentry.y, sentry.radius + Math.sin(sentry.pulse) * 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#26333a";
+        ctx.fill();
+        ctx.strokeStyle = "#7df5ff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sentry.x - 10, sentry.y);
+        ctx.lineTo(sentry.x + 10, sentry.y);
+        ctx.moveTo(sentry.x, sentry.y - 10);
+        ctx.lineTo(sentry.x, sentry.y + 10);
+        ctx.strokeStyle = "#d8fbff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(sentry.x - 24, sentry.y - sentry.radius - 14, 48, 4);
+        ctx.fillStyle = "#7df5ff";
+        ctx.fillRect(sentry.x - 24, sentry.y - sentry.radius - 14, 48 * clamp(sentry.hp / sentry.maxHp, 0, 1), 4);
+      }
+
       if (state.player) {
         const flash = state.player.invuln > 0 && Math.floor(state.player.invuln * 20) % 2 === 0;
         drawCircle(state.player, 0, 0, flash ? "#ffadad" : "#ff3434");
-        if (state.player.slowTimer > 0 || state.player.trapTimer > 0 || state.player.infectTimer > 0) {
+        if (state.player.slowTimer > 0 || state.player.trapTimer > 0 || state.player.infectTimer > 0 || state.player.burnTimer > 0) {
           ctx.beginPath();
           ctx.arc(state.player.x, state.player.y, state.player.radius + 8, 0, Math.PI * 2);
-          ctx.strokeStyle = state.player.infectTimer > 0 ? "#8df06a" : "#6fe3c1";
+          ctx.strokeStyle = state.player.burnTimer > 0 ? "#ff7a35" : state.player.infectTimer > 0 ? "#8df06a" : "#6fe3c1";
           ctx.lineWidth = 2;
           ctx.stroke();
         }
@@ -1735,10 +2205,10 @@
       }
 
       for (const merc of state.mercs) {
-        drawCircle(merc, 0, 0, "#4f9cff", 10);
+        drawCircle(merc, 0, 0, merc.color || "#4f9cff", merc.radius);
         ctx.fillStyle = "rgba(0,0,0,0.45)";
         ctx.fillRect(merc.x - 18, merc.y - 22, 36, 4);
-        ctx.fillStyle = "#7db7ff";
+        ctx.fillStyle = merc.color || "#7db7ff";
         ctx.fillRect(merc.x - 18, merc.y - 22, 36 * clamp(merc.hp / merc.maxHp, 0, 1), 4);
         ctx.beginPath();
         ctx.moveTo(merc.x, merc.y);
@@ -1757,7 +2227,8 @@
       const weapon = weapons.find(w => w.id === state.weaponId);
       const reloadText = state.reloadTimer > 0 ? ` | reloading ${state.reloadTimer.toFixed(1)}s` : "";
       ctx.fillText(`${weapon.name}`, 26, height - 34);
-      ctx.fillText(`Ammo ${state.magazine}/${weapon.magSize} | reserve ${state.ammo}${reloadText}`, 26, height - 18);
+      const ammoText = weapon.deployable ? `Click to place | ${weapon.deployCost} coins` : weapon.noReload ? `Ammo belt ${state.ammo}` : `Ammo ${state.magazine}/${weapon.magSize} | reserve ${state.ammo}${reloadText}`;
+      ctx.fillText(ammoText, 26, height - 18);
       if (state.secondaryId) {
         const secondary = secondaries.find(item => item.id === state.secondaryId);
         const status = state.secondaryCooldown > 0 ? `${state.secondaryCooldown.toFixed(1)}s` : "ready";
@@ -1826,9 +2297,10 @@
     }
 
     function updateUi() {
+      const weapon = weapons.find(w => w.id === state.weaponId);
       ui.health.textContent = Math.ceil(state.player ? state.player.hp : 100);
       ui.coins.textContent = state.money;
-      ui.ammo.textContent = `${state.magazine}/${state.ammo}`;
+      ui.ammo.textContent = weapon && weapon.deployable ? `${weapon.deployCost}c` : weapon && weapon.noReload ? state.ammo : `${state.magazine}/${state.ammo}`;
       ui.wave.textContent = state.wave;
       ui.kills.textContent = state.kills;
       updateTrainingText();
@@ -1846,12 +2318,28 @@
         const row = document.createElement("div");
         row.className = `weapon ${weapon.id === state.weaponId ? "active" : ""}`;
         const text = document.createElement("div");
-        text.innerHTML = `<strong>${weapon.name}</strong><span>${weapon.detail} | ${weapon.ammoCost} ammo/shot | mag ${weapon.magSize}</span>`;
+        const magazineText = weapon.noReload ? "no reload" : `mag ${weapon.magSize}`;
+        const traits = [
+          `${weapon.ammoCost} ammo`,
+          magazineText,
+          weapon.flame ? "cone burn" : null,
+          weapon.deployable ? `${weapon.deployCost}c deploy` : null,
+          weapon.firingSlow ? "slows firing" : null,
+          weapon.aoeRadius ? "splash" : null,
+          weapon.pierce ? `pierce ${weapon.pierce}` : null,
+          weapon.homing ? "homing" : null
+        ].filter(Boolean);
+        text.innerHTML = `<strong>${weapon.name}</strong><span>${weapon.detail}</span><div class="shop-meta">${traits.map(item => `<span class="shop-chip">${item}</span>`).join("")}</div>`;
         const button = document.createElement("button");
         button.className = "buy";
         const owned = state.owned.has(weapon.id);
         button.textContent = owned ? (weapon.id === state.weaponId ? "Using" : "Equip") : `${weapon.cost}c`;
         button.disabled = owned && weapon.id === state.weaponId || (!owned && state.money < weapon.cost);
+        const action = document.createElement("div");
+        action.className = "shop-action";
+        const cost = document.createElement("div");
+        cost.className = "shop-cost";
+        cost.textContent = owned ? "Owned" : `${weapon.cost} coins`;
         const buyOrEquip = () => {
           if (!state.owned.has(weapon.id)) {
             if (state.money < weapon.cost) return;
@@ -1868,7 +2356,8 @@
           event.preventDefault();
           buyOrEquip();
         });
-        row.append(text, button);
+        action.append(cost, button);
+        row.append(text, action);
         ui.shop.append(row);
       }
     }
@@ -1878,14 +2367,22 @@
       return Math.floor(upgrade.cost * Math.pow(1.55, level));
     }
 
-    function addMercenary() {
+    function addMercenary(kind = "soldier") {
       const slot = state.mercs.length;
+      const stats = {
+        soldier: { hp: 260, radius: 10, speed: 245, color: "#4f9cff" },
+        medic: { hp: 185, radius: 10, speed: 285, color: "#ff8fb1" },
+        flanker: { hp: 95, radius: 9, speed: 390, color: "#d8ecff" }
+      }[kind];
       state.mercs.push({
         x: state.player.x + rand(-70, 70),
         y: state.player.y + rand(-70, 70),
-        radius: 10,
-        hp: 260,
-        maxHp: 260,
+        radius: stats.radius,
+        hp: stats.hp,
+        maxHp: stats.hp,
+        speed: stats.speed,
+        kind,
+        color: stats.color,
         faceX: 1,
         faceY: 0,
         cooldown: rand(0, 450),
@@ -1902,21 +2399,27 @@
         const row = document.createElement("div");
         row.className = `weapon ${level > 0 ? "active" : ""}`;
         const text = document.createElement("div");
-        text.innerHTML = `<strong>${upgrade.name} ${level}/${upgrade.max}</strong><span>${upgrade.detail}</span>`;
+        text.innerHTML = `<strong>${upgrade.name}</strong><span>${upgrade.detail}</span><div class="shop-meta"><span class="shop-chip">level ${level}/${upgrade.max}</span></div>`;
         const button = document.createElement("button");
         button.className = "buy";
         button.textContent = maxed ? "Max" : `${cost}c`;
         button.disabled = maxed || state.money < cost;
+        const action = document.createElement("div");
+        action.className = "shop-action";
+        const price = document.createElement("div");
+        price.className = "shop-cost";
+        price.textContent = maxed ? "Maxed" : `${cost} coins`;
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
           if (maxed || state.money < cost) return;
           state.money -= cost;
           state.upgradeLevels[upgrade.id] = level + 1;
-          if (upgrade.id === "soldier") addMercenary();
+          if (upgrade.id === "soldier" || upgrade.id === "medic" || upgrade.id === "flanker") addMercenary(upgrade.id);
           state.shopDirty = true;
           updateUi();
         });
-        row.append(text, button);
+        action.append(price, button);
+        row.append(text, action);
         ui.upgradeShop.append(row);
       }
     }
@@ -1929,11 +2432,16 @@
         const row = document.createElement("div");
         row.className = `weapon ${active ? "active" : ""}`;
         const text = document.createElement("div");
-        text.innerHTML = `<strong>${secondary.name}</strong><span>${secondary.detail} | cooldown ${secondary.cooldown}s</span>`;
+        text.innerHTML = `<strong>${secondary.name}</strong><span>${secondary.detail}</span><div class="shop-meta"><span class="shop-chip">${secondary.cooldown}s cooldown</span></div>`;
         const button = document.createElement("button");
         button.className = "buy";
         button.textContent = owned ? (active ? "Using" : "Equip") : `${secondary.cost}c`;
         button.disabled = active || (!owned && state.money < secondary.cost);
+        const action = document.createElement("div");
+        action.className = "shop-action";
+        const price = document.createElement("div");
+        price.className = "shop-cost";
+        price.textContent = owned ? "Owned" : `${secondary.cost} coins`;
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
           if (!state.ownedSecondaries.has(secondary.id)) {
@@ -1946,7 +2454,8 @@
           state.shopDirty = true;
           updateUi();
         });
-        row.append(text, button);
+        action.append(price, button);
+        row.append(text, action);
         ui.secondaryShop.append(row);
       }
     }
@@ -1995,6 +2504,7 @@
         return;
       }
       updatePointerAim(event);
+      if (state.weaponId === "sentry") state.sentryDeployRequested = true;
     });
     canvas.addEventListener("contextmenu", event => {
       event.preventDefault();
